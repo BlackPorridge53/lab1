@@ -263,7 +263,7 @@ int oddParity(int x) {
 int rotateRightBits(int x, int n) {
   n &= 31;
   int shift = (~n + 1) & 31;
-  return ((x >> n) & (~(((1 << 31) >> shift) << 1))) | (x << shift);
+  return ((x >> n) & (~(((1 << 31) >> n) << 1))) | (x << shift);
 }
 // P10
 /*
@@ -313,7 +313,7 @@ int midpointTowardFirst(int x, int y) {
  */
 int isBetweenEitherOrder(int x, int a, int b) {
   int signx = x >> 31, signa = (x ^ a) >> 31, signb = (x ^ b) >> 31;
-  return !(x ^ a) | !(x ^ b) | (((signa & signx) | (~signa & ((x + ~a + 1) >> 31))) ^ ((signb & signx) | (~signb & ((x + ~b + 1) >> 31))) & 1);
+  return !(x ^ a) | !(x ^ b) | ((((signa & signx) | (~signa & ((x + ~a + 1) >> 31))) ^ ((signb & signx) | (~signb & ((x + ~b + 1) >> 31)))) & 1);
 }
 
 // P13
