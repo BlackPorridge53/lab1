@@ -158,7 +158,7 @@ int signMask(void) {
  *   Rating: 2
  */
 int bitXor(int x, int y) {
-	return (~x & y) | (x & ~y);
+	return ~(x & y) & ~(~x & ~y);
 }
 
 // P3
@@ -201,7 +201,7 @@ int copyByteWithin(int x, int src, int dst) {
  *   Rating: 4
  */
 int logicalShift(int x, int n) {
-  int mask = (1 << (32 - n)) - 1;
+  int mask = ~(((1 << 31) >> n) << 1);
   return (x >> n) & mask;
 }
 
@@ -214,8 +214,9 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int swapNibblePairs(int x) {
-  int mask1 = (15 << 8) + 15, mask2 = (240 << 8) + 240;
-  return ((x & mask1) << 4) | ((x & mask2) >> 4);
+  int mask = (15 << 8) | 15;
+  mask |= (mask << 16);
+  return ((x & mask) << 4) | (x >> 4) & mask;
 }
 
 // P7
@@ -260,7 +261,9 @@ int oddParity(int x) {
  *   Rating: 5
  */
 int rotateRightBits(int x, int n) {
-  return (x >> n) | (x << (32 - n));
+  n &= 31;
+  int shift = (~n + 1) & 31;
+  return ((x >> n) & ~(((1 << 31) >> shift) << 1)) | (x << shift);
 }
 // P10
 /*
