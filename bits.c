@@ -263,7 +263,7 @@ int oddParity(int x) {
 int rotateRightBits(int x, int n) {
   n &= 31;
   int shift = (~n + 1) & 31;
-  return ((x >> n) & ~(((1 << 31) >> shift) << 1)) | (x << shift);
+  return ((x >> n) & (~(((1 << 31) >> shift) << 1))) | (x << shift);
 }
 // P10
 /*
@@ -312,7 +312,8 @@ int midpointTowardFirst(int x, int y) {
  *   Rating: 7
  */
 int isBetweenEitherOrder(int x, int a, int b) {
-  return !((x + ~a + 1) >> 31) & !((b + ~x + 1) >> 31);
+  int signx = x >> 31, signa = (x ^ a) >> 31, signb = (x ^ b) >> 31;
+  return !(x ^ a) | !(x ^ b) | (((signa & signx) | (~signa & ((x + ~a + 1) >> 31))) ^ ((signb & signx) | (~signb & ((x + ~b + 1) >> 31))) & 1);
 }
 
 // P13
@@ -325,7 +326,7 @@ int isBetweenEitherOrder(int x, int a, int b) {
  *   Rating: 7
  */
 int mul5Sat(int x) {
-  int x2 = x + 2, x4 = x2 + x2, x5 = x4 + x;
+  int x2 = x + x, x4 = x2 + x2, x5 = x4 + x;
   int maxx = ~(1 << 31) ^ (x >> 31);
   int overflow = ((x  ^ x2) | (x2 ^ x4) | (x4 ^ x5)) >> 31;
   return (overflow & maxx) | (~overflow & x5);
@@ -343,7 +344,7 @@ int mul5Sat(int x) {
 int classifyAdd3(int x, int y, int z) {
   int s = x + y;
   int carry1 = (((x & y) | ((x | y) & ~(x + y))) >> 31) & 1;
-  int carry2 = (((s & z) | ((s | z) & ~(s + z))) >> 3) & 1;
+  int carry2 = (((s & z) | ((s | z) & ~(s + z))) >> 31) & 1;
   int high = (x >> 31) + (y >> 31) + (z >> 31) + carry1 + carry2;
   int d = high + (((s + z) >> 31) & 1);
   return (d >> 31) | !!d;
@@ -363,7 +364,8 @@ int classifyAdd3(int x, int y, int z) {
  *   Rating: 7
  */
 unsigned floatScaleThreeHalves(unsigned uf) {
-  unsigned sign = uf & 0x80000000u, exp = (uf >> 23) & 0xFFu, digit = uf & 0x7fffffu, shift = 1;
+  unsigned sign = uf & 0x80000000u, digit = uf & 0x7fffffu;
+  int  exp = (uf >> 23) & 0xFF,shift = 1;
   if(exp == 0xFF)
     return uf;
   if(exp)
@@ -400,8 +402,8 @@ unsigned floatScaleThreeHalves(unsigned uf) {
  *   Rating: 10
  */
 unsigned floatRoundEven(unsigned uf) {
-  unsigned sign = uf & 0x80000000u, exp = (uf >> 23) & 0xFFu, digit = uf & 0x7fffffu, shift = 23 - exp + 127;
-  int e = exp - 127;
+  unsigned sign = uf & 0x80000000u, digit = uf & 0x7fffffu;
+  int exp = (uf >> 23) & 0xFFu,  shift = 23 - exp + 127;
   if (exp - 127 >= 23)
     return uf;
   if (exp - 127 < -1)
@@ -428,7 +430,8 @@ unsigned floatRoundEven(unsigned uf) {
  *   Rating: 10
  */
 unsigned float_i2f(int x) {
-  unsigned sign = x & 0x80000000u, exp = 158, y = x;
+  unsigned sign = x & 0x80000000u, y = x;
+  int exp = 158;
   if(!x)
     return 0;
   if(sign)
